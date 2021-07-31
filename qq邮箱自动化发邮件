@@ -1,0 +1,52 @@
+# @Time: 2021/8/1 1:54
+# @Author: 石振飞
+# @File: 02-qq邮箱自动发信息.py
+# Software: PyCharm
+from selenium import webdriver
+from time import sleep
+
+web = webdriver.Chrome()    # 创建自动化对象
+
+url = "https://mail.qq.com/"    # 设置访问地址
+web.get(url)                    # 访问浏览器
+
+frame = web.find_element_by_id("login_frame")       # 定位frame嵌入标签
+web.switch_to.frame(frame)                          # 切换到frame嵌入标签中
+
+web.find_element_by_id("u").send_keys("username") # 定位账号位置 输入账号
+web.find_element_by_id("p").send_keys("password") # 定位密码位置 输入密码
+web.find_element_by_id("login_button").click()      # 定位登录位置 点击登录
+sleep(2)
+
+web.switch_to.parent_frame()    # 退出frame嵌入标签
+sleep(5)        # 根据网络 设置等待时间  这里照顾到初学者使用的是time.sleep()
+
+window = web.window_handles     # 定位到跳转页面 页面进行跳转之后一般都需要重新定位
+web.switch_to.window(window[-1])    # 直接定位最后一个页面 一般都是新打开的页面 非打开新页面方式也可使用
+
+sleep(2)    # 等待
+web.find_element_by_id("composebtn").click()    # 点击写信 进入写信界面
+
+sleep(5)    # 等待页面加载
+
+window = web.window_handles                     # 这个就是非新页面打开的案例 定位新页面
+web.switch_to.window(window[-1])                # 定位
+frame = web.find_element_by_id("mainFrame")     # 定位frame嵌入式标签位置
+web.switch_to.frame(frame)                      # 切换到frame嵌入标签中
+
+# 下面分别是定位 收件人 邮件名 写信位置 后面send_keys为写入内容
+# 这里注意: 写信位置需要点击一次之后才可开始写入  并且也有单独frame嵌入标签
+# 收件人位置
+web.find_element_by_xpath("//*[@id='toAreaCtrl']/div[2]/input").send_keys("newname@qq.com")
+# 邮件名
+web.find_element_by_id("subject").send_keys("hallo world")
+# 写信位置 这里直接在切换函数位置调用定位  省略了frame=web.find_element_by_xpath('//*[@class="qmEditorIfrmEditArea"]')
+web.switch_to.frame(web.find_element_by_xpath('//*[@class="qmEditorIfrmEditArea"]'))
+web.find_element_by_xpath('/html/body').click()
+web.find_element_by_xpath('/html/body').send_keys("你好啊!!!")
+
+web.switch_to.parent_frame()    # 切换出写信位置的frame
+web.find_element_by_xpath('//*[@name="sendbtn"]').click()   # 点击发送按钮
+
+sleep(5)            # 待定确保发送成功
+web.close()         # 关闭网页
